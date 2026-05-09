@@ -358,6 +358,44 @@ function buildTimeSection(params: { userTimezone?: string }) {
   return ["## Current Date & Time", `Time zone: ${params.userTimezone}`, ""];
 }
 
+function buildOutputFormatSection(params: { isMinimal: boolean }) {
+  if (params.isMinimal) {
+    return [];
+  }
+  return [
+    "## 📋 Output Format Standards",
+    "Use these consistent formats for tool/system output:",
+    "",
+    "### Command Execution",
+    "```",
+    "<bash-output exit=\"0\">",
+    "[stdout] ...[/stdout]",
+    "[stderr] ...[/stderr]",
+    "</bash-output>",
+    "```",
+    "",
+    "### File Reading",
+    "- Default max: 2000 lines per read",
+    "- Files >2000 lines: prompt the user to read in segments (offset + limit)",
+    "- Large tool results >50000 chars: truncate and save to file, provide path",
+    "",
+    "### Errors",
+    "```",
+    "<error type=\"type\">",
+    "description",
+    "</error>",
+    "```",
+    "",
+    "### Status Indicators",
+    "- ✅ All normal / operation successful",
+    "- ⚠️ Warning / non-critical issue",
+    "- 🔴 Error / critical failure",
+    "- ❌ Feature not available / command failed",
+    "- ⏳ Processing / in progress",
+    "",
+  ];
+}
+
 function buildGitSecuritySection(params: { isMinimal: boolean }) {
   if (params.isMinimal) {
     return [];
@@ -1027,6 +1065,10 @@ export function buildAgentSystemPrompt(params: {
       ...buildOverridablePromptSection({
         override: providerStablePrefix,
         fallback: [],
+      }),
+      ...buildOverridablePromptSection({
+        override: undefined,
+        fallback: buildOutputFormatSection({ isMinimal }),
       }),
       ...buildOverridablePromptSection({
         override: undefined,
