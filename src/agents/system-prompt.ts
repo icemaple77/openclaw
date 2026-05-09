@@ -358,6 +358,33 @@ function buildTimeSection(params: { userTimezone?: string }) {
   return ["## Current Date & Time", `Time zone: ${params.userTimezone}`, ""];
 }
 
+function buildGitSecuritySection(params: { isMinimal: boolean }) {
+  if (params.isMinimal) {
+    return [];
+  }
+  return [
+    "## 🔒 Git Safety Rules",
+    "These rules apply to ALL git operations via BashTool or any other tool:",
+    "",
+    "### Forbidden (unless the user explicitly requests)",
+    "- `git push --force` → use `git push --force-with-lease` instead",
+    "- `git reset --hard` → stash or commit first",
+    "- `git checkout .` / `git checkout --` → only restore specific files",
+    "- `git clean -f` / `git clean -fd` → preview with `-n` first",
+    "- `git branch -D` → use `-d` (lowercase)",
+    "- `git commit --no-verify` → NEVER skip hooks",
+    "- `git commit --no-gpg-sign` or `git -c commit.gpgsign=false` → NEVER skip signing",
+    "- `git merge --no-ff` with destructive intent → be careful",
+    "",
+    "### Enforcement",
+    "- Before any destructive git operation, ask the user for confirmation.",
+    "- User's explicit request can override these rules.",
+    "- `--no-verify` is NEVER executed automatically under any circumstances.",
+    "- `git push --force` to main/master should warn the user even if they request it.",
+    "",
+  ];
+}
+
 function buildAssistantOutputDirectivesSection(isMinimal: boolean) {
   if (isMinimal) {
     return [];
@@ -1000,6 +1027,10 @@ export function buildAgentSystemPrompt(params: {
       ...buildOverridablePromptSection({
         override: providerStablePrefix,
         fallback: [],
+      }),
+      ...buildOverridablePromptSection({
+        override: undefined,
+        fallback: buildGitSecuritySection({ isMinimal }),
       }),
       ...safetySection,
       "## OpenClaw CLI Quick Reference",
